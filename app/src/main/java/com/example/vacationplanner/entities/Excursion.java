@@ -6,13 +6,10 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "excursions")
 public class Excursion {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int excursionID;
-
     private String excursionTitle;
-
     private String excursionDate;
-
     private int vacationID;
 
     public Excursion(int excursionID, String excursionTitle, String excursionDate, int vacationID) {
