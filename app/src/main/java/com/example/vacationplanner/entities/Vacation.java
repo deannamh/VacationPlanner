@@ -7,13 +7,9 @@ import androidx.room.PrimaryKey;
 public class Vacation {
     @PrimaryKey(autoGenerate = true)
     private int vacationID;
-
     private String title;
-
     private String hotelName;
-
     private String startDate;
-
     private String endDate;
 
     public Vacation(int vacationID, String title, String hotelName, String startDate, String endDate) {
@@ -38,6 +34,10 @@ public class Vacation {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String toString(){
+        return title;
     }
 
     public String getHotelName() {
