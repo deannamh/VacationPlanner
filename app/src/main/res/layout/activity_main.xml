@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="100dp"
         android:backgroundTint="#F47D56"
-        android:text="Enter"
+        android:text="Get Started"
         android:textAlignment="center"
         android:textColorLink="#0D1E5F"
         android:textStyle="bold"
