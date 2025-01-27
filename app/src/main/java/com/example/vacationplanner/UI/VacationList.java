@@ -25,7 +25,7 @@ public class VacationList extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_vacation_list);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -34,7 +34,7 @@ public class VacationList extends AppCompatActivity {
             return insets;
         });
 
-        // floating action button on VacationList page to add vacations(vacation details)
+        // floating action button on VacationList page to add vacations(goes to vacation details page)
         FloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
