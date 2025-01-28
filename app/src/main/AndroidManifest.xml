@@ -13,11 +13,6 @@
         android:theme="@style/Theme.VacationPlanner"
         tools:targetApi="31">
         <activity
-            android:name=".UI.ExcursionList"
-            android:exported="false"
-            android:label="Excursion List"
-            android:parentActivityName=".UI.VacationDetails"/>
-        <activity
             android:name=".UI.VacationList"
             android:exported="false"
             android:label="Vacation List"
