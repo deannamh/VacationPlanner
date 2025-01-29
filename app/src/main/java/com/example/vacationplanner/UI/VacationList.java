@@ -53,7 +53,7 @@ public class VacationList extends AppCompatActivity {
 
         //need to query database to find data to populate RecyclerView
         repository = new Repository(getApplication()); // gets the repository
-        List<Vacation> allVacations = repository.getmAllVacations(); // gets all products
+        List<Vacation> allVacations = repository.getmAllVacations(); // gets all vacations
 
         // Call VacationAdapter and set it on the RecyclerView
         final VacationAdapter vacationAdapter = new VacationAdapter(this);
@@ -72,6 +72,17 @@ public class VacationList extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_vacation_list, menu);
         return true;
+    }
+
+    @Override
+    protected void onResume(){ //gets vacations from database again and updates the recyclerview
+        super.onResume();
+        List<Vacation> allVacations = repository.getmAllVacations();
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        final VacationAdapter vacationAdapter = new VacationAdapter(this);
+        recyclerView.setAdapter(vacationAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        vacationAdapter.setVacations(allVacations);
     }
 
     @Override
