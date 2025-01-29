@@ -3,11 +3,14 @@ package com.example.vacationplanner.UI;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.vacationplanner.R;
 import com.example.vacationplanner.database.Repository;
 import com.example.vacationplanner.entities.Excursion;
+import com.example.vacationplanner.entities.Vacation;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.w3c.dom.Text;
@@ -75,8 +79,6 @@ public class VacationDetails extends AppCompatActivity {
 
         editTitle.setText(title);
         editHotelName.setText(hotelName);
-        startDateButton.setText(startDate);
-        endDateButton.setText(endDate);
 
         // format date to set button text with current date if it's a null or empty string (like when adding a new vacation)
         String myFormat = "MM/dd/yy";
@@ -89,6 +91,7 @@ public class VacationDetails extends AppCompatActivity {
         if (endDate == null || endDate.isEmpty()){
             endDate = currentDate;
         }
+
         startDateButton.setText(startDate);
         endDateButton.setText(endDate);
 
@@ -118,7 +121,6 @@ public class VacationDetails extends AppCompatActivity {
         startDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Date date;
                 String info = startDateButton.getText().toString(); // getting text from the button
 
                 if (info.isEmpty()){
@@ -141,7 +143,6 @@ public class VacationDetails extends AppCompatActivity {
         endDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Date date;
                 String info = endDateButton.getText().toString(); // getting text from the button
 
                 if (info.isEmpty()){
@@ -178,8 +179,7 @@ public class VacationDetails extends AppCompatActivity {
         final ExcursionAdapter excursionAdapter = new ExcursionAdapter(this);
         recyclerView.setAdapter(excursionAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // the excursionrecyclerview will show all excursions:
-        // excursionAdapter.setExcursions(repository.getmAllExcursions());
+        // excursionAdapter.setExcursions(repository.getmAllExcursions()); // the excursionrecyclerview will show all excursions
         // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
         List<Excursion> allExcursions = repository.getmAllExcursions();
         for (Excursion e: allExcursions){
@@ -197,6 +197,62 @@ public class VacationDetails extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    // inflate menu
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_vacation_details, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        // if user selects 'save vacation' menu option
+        if (item.getItemId() == R.id.vacationsave){
+            String myFormat = "MM/dd/yy";
+            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+            String stringStartDate = sdf.format(calendarStartDate.getTime());
+            String stringEndDate = sdf.format(calendarEndDate.getTime());
+
+            // convert stringStartDate and stringEndDate back to Date objects so we can compare dates
+            try {
+                Date dateStart = sdf.parse(stringStartDate);
+                Date dateEnd = sdf.parse(stringEndDate);
+                assert dateEnd != null;
+
+                if (dateEnd.before(dateStart)){
+                    Toast.makeText(VacationDetails.this, "Please select an end date later than the start date.", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Vacation vacation;
+                    if(vacationID == -1){ //if vacationID does not exist from intent extra, set the vacationID to 1
+                        if(repository.getmAllVacations().isEmpty()) {
+                            vacationID = 1;
+                        }
+                        else { // increment last vacationID
+                            vacationID = repository.getmAllVacations().get(repository.getmAllVacations().size() - 1).getVacationID() + 1;
+                            vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
+                            repository.insert(vacation);
+                            this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
+                        }
+                    }
+                    else { //existing vacation was modified by user so we need to update it instead:
+                        vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
+                        repository.update(vacation);
+                        this.finish();
+                    }
+                }
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (item.getItemId() == android.R.id.home) { // for a back button
+            this.finish();
+            return true;
+        }
+
+        return true;
     }
 
     // this method uses SimpleDateFormat to format the calendar objects for startDateButton
