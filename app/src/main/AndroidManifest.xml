@@ -7,7 +7,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Vacation Planner"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VacationPlanner"
@@ -26,7 +26,7 @@
             android:name=".UI.VacationDetails"
             android:exported="false"
             android:parentActivityName=".UI.VacationList"
-            android:label="Vacation Details" />
+            android:label="Vacation Details &amp; Excursions" />
         <activity
             android:name=".UI.MainActivity"
             android:exported="true"
