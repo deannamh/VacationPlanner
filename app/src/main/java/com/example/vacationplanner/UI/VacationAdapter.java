@@ -26,7 +26,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     }
 
     public class VacationViewHolder extends RecyclerView.ViewHolder {
-        private final TextView vacationItemView; //if we have 2 text views, THEN list both
+        private final TextView vacationItemView; //if we have 2 text views, then list both
 
         public VacationViewHolder(@NonNull View itemView) {
             super(itemView);
