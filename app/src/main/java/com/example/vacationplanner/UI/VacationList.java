@@ -5,9 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -39,7 +37,7 @@ public class VacationList extends AppCompatActivity {
         });
 
         // floating action button on VacationList page to add vacations(goes to vacation details page)
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        FloatingActionButton fab = findViewById(R.id.fabAddVacation);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

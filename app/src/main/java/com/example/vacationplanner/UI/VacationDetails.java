@@ -9,10 +9,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -25,8 +23,6 @@ import com.example.vacationplanner.database.Repository;
 import com.example.vacationplanner.entities.Excursion;
 import com.example.vacationplanner.entities.Vacation;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,8 +52,6 @@ public class VacationDetails extends AppCompatActivity {
     final Calendar calendarEndDate = Calendar.getInstance();
 
     Repository repository;
-
-    List<Excursion> excursionList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,7 +158,7 @@ public class VacationDetails extends AppCompatActivity {
 
 
         // Floating action button that takes user to Excursion Details page to add excursions
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton2);
+        FloatingActionButton fab = findViewById(R.id.fabAddExcursion);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -181,13 +175,13 @@ public class VacationDetails extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         // excursionAdapter.setExcursions(repository.getmAllExcursions()); // the excursionrecyclerview will show all excursions
         // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
-        List<Excursion> allExcursions = repository.getmAllExcursions();
-        for (Excursion e: allExcursions){
+        List<Excursion> filteredExcursions = new ArrayList<>();
+        for (Excursion e: repository.getmAllExcursions()){
             if (e.getVacationID() == vacationID){
-                excursionList.add(e);
+                filteredExcursions.add(e);
             }
         }
-        excursionAdapter.setExcursions(excursionList);
+        excursionAdapter.setExcursions(filteredExcursions);
         
 
 
