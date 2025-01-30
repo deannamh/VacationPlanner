@@ -8,4 +8,32 @@
     android:background="#EAECDE"
     tools:context=".UI.ExcursionDetails">
 
+    <EditText
+        android:id="@+id/excursionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Excursion Title"
+        android:inputType="text"
+        android:textColor="#020000"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@id/excursionDateButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.74" />
+
+    <Button
+        android:id="@+id/excursionDateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="388dp"
+        android:text="Select date"
+        android:textAlignment="center"
+        android:textColorLink="#0D1E5F"
+        android:backgroundTint="#ED3358"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
