@@ -80,6 +80,7 @@ public class VacationDetails extends AppCompatActivity {
         // format date to set button text with current date if it's a null or empty string (like when adding a new vacation)
         String myFormat = "MM/dd/yy";
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        sdf.setLenient(false); // ensures dates will be formatted correctly
         String currentDate = sdf.format(new Date());
 
         if (startDate == null || startDate.isEmpty()){
@@ -92,7 +93,8 @@ public class VacationDetails extends AppCompatActivity {
         endDateButton.setText(endDate);
 
 
-        // when user picks date from datepicker dialog box, set Calendar object to that date and update the start button label
+        // when user picks date from datepicker dialog box, set Calendar object to that date and update the start button label.
+        // //this also ensures the correct date format will be used since user selects a date from a calendar instead of enters it manually
         dpStartDate = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
