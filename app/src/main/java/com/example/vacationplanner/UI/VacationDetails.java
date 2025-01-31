@@ -165,11 +165,16 @@ public class VacationDetails extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(VacationDetails.this, ExcursionDetails.class);
-                //we need to send (putExtra) the vacationID to excursiondetails so we can ensure the excursion date is during the associated vacation.
-                //sending the ID instead of the dates lets us check the database for the dates (more recent dates in case of changes by user)
-                intent.putExtra("vacationID", vacationID);
-                startActivity(intent);
+                if (vacationID == -1) { //vacation is not saved yet
+                    Toast.makeText(VacationDetails.this, "Save vacation to add excursions", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Intent intent = new Intent(VacationDetails.this, ExcursionDetails.class);
+                    //we need to send (putExtra) the vacationID to excursiondetails so we can ensure the excursion date is during the associated vacation.
+                    //sending the ID instead of the dates lets us check the database for the dates (more recent dates in case of changes by user)
+                    intent.putExtra("vacationID", vacationID);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -181,14 +186,7 @@ public class VacationDetails extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         // excursionAdapter.setExcursions(repository.getmAllExcursions()); // the excursionrecyclerview will show all excursions
         // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
-        List<Excursion> filteredExcursions = new ArrayList<>();
-        List<Excursion> alLExcursions = repository.getmAllExcursions();
-
-        for (Excursion e: alLExcursions){
-            if (e.getVacationID() == vacationID){
-                filteredExcursions.add(e);
-            }
-        }
+        List<Excursion> filteredExcursions = repository.getAssociatedExcursions(vacationID);
         excursionAdapter.setExcursions(filteredExcursions);
         
 
