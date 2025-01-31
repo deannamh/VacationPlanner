@@ -53,6 +53,9 @@ public class VacationDetails extends AppCompatActivity {
 
     Repository repository;
 
+    Vacation currentVacation;
+    int numExcursions;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +88,6 @@ public class VacationDetails extends AppCompatActivity {
         if (endDate == null || endDate.isEmpty()){
             endDate = currentDate;
         }
-
         startDateButton.setText(startDate);
         endDateButton.setText(endDate);
 
@@ -176,7 +178,9 @@ public class VacationDetails extends AppCompatActivity {
         // excursionAdapter.setExcursions(repository.getmAllExcursions()); // the excursionrecyclerview will show all excursions
         // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
         List<Excursion> filteredExcursions = new ArrayList<>();
-        for (Excursion e: repository.getmAllExcursions()){
+        List<Excursion> alLExcursions = repository.getmAllExcursions();
+
+        for (Excursion e: alLExcursions){
             if (e.getVacationID() == vacationID){
                 filteredExcursions.add(e);
             }
@@ -214,7 +218,7 @@ public class VacationDetails extends AppCompatActivity {
                 Date dateEnd = sdf.parse(stringEndDate);
                 assert dateEnd != null;
 
-                if (dateEnd.before(dateStart)){
+                if (!dateEnd.after(dateStart)){ //if the date is not AFTER start date (can't be the same day or before)
                     Toast.makeText(VacationDetails.this, "Please select an end date later than the start date.", Toast.LENGTH_LONG).show();
                 }
                 else {
@@ -239,6 +243,31 @@ public class VacationDetails extends AppCompatActivity {
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        if (item.getItemId() ==  R.id.vacationdelete){
+            List<Vacation> allVacations = repository.getmAllVacations();
+
+            for (Vacation v: allVacations){
+                if(v.getVacationID() == vacationID) currentVacation = v;
+            }
+
+            numExcursions = 0;
+            List<Excursion> allExcursions = repository.getmAllExcursions();
+
+            for (Excursion e: allExcursions){
+                if (e.getVacationID() == vacationID) numExcursions++;
+            }
+
+            if(numExcursions == 0){
+                repository.delete(currentVacation);
+                Toast.makeText(VacationDetails.this, currentVacation.getTitle() + " was deleted.", Toast.LENGTH_LONG).show();
+                VacationDetails.this.finish();
+            }
+            else {
+               Toast.makeText(VacationDetails.this, "Cannot delete a vacation with excursions.", Toast.LENGTH_LONG).show();
+            }
+
         }
 
         if (item.getItemId() == android.R.id.home) { // for a back button
