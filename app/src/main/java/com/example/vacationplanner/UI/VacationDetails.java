@@ -50,6 +50,7 @@ public class VacationDetails extends AppCompatActivity {
     DatePickerDialog.OnDateSetListener dpEndDate;
     final Calendar calendarStartDate = Calendar.getInstance();
     final Calendar calendarEndDate = Calendar.getInstance();
+    final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
     Repository repository;
 
@@ -78,8 +79,6 @@ public class VacationDetails extends AppCompatActivity {
         editHotelName.setText(hotelName);
 
         // format date to set button text with current date if it's a null or empty string (like when adding a new vacation)
-        String myFormat = "MM/dd/yy";
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         sdf.setLenient(false); // ensures dates will be formatted correctly
         String currentDate = sdf.format(new Date());
 
@@ -167,6 +166,9 @@ public class VacationDetails extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(VacationDetails.this, ExcursionDetails.class);
+                //we need to send (putExtra) the vacationID to excursiondetails so we can ensure the excursion date is during the associated vacation.
+                //sending the ID instead of the dates lets us check the database for the dates (more recent dates in case of changes by user)
+                intent.putExtra("vacationID", vacationID);
                 startActivity(intent);
             }
         });
@@ -199,6 +201,18 @@ public class VacationDetails extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume(){ //gets excursions associated with vacation id and updates the recyclerview
+        super.onResume();
+        repository = new Repository(getApplication());
+        List<Excursion> filteredExcursions = repository.getAssociatedExcursions(vacationID);
+        RecyclerView recyclerView = findViewById(R.id.excursionrecyclerview);
+        final ExcursionAdapter excursionAdapter = new ExcursionAdapter(this);
+        recyclerView.setAdapter(excursionAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        excursionAdapter.setExcursions(filteredExcursions);
+    }
+
     // inflate menu
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_vacation_details, menu);
@@ -209,8 +223,6 @@ public class VacationDetails extends AppCompatActivity {
 
         // if user selects 'save vacation' menu option
         if (item.getItemId() == R.id.vacationsave){
-            String myFormat = "MM/dd/yy";
-            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
             String stringStartDate = sdf.format(calendarStartDate.getTime());
             String stringEndDate = sdf.format(calendarEndDate.getTime());
 
@@ -282,15 +294,11 @@ public class VacationDetails extends AppCompatActivity {
 
     // this method uses SimpleDateFormat to format the calendar objects for startDateButton
     private void updateButtonLabelStart() {
-        String myFormat = "MM/dd/yy";
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         startDateButton.setText(sdf.format(calendarStartDate.getTime()));
     }
 
     //method for formatting calendar object for endDateButton
     private void updateButtonLabelEnd() {
-        String myFormat = "MM/dd/yy";
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         endDateButton.setText(sdf.format(calendarEndDate.getTime()));
     }
 }
