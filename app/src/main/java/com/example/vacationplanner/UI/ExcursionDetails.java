@@ -1,6 +1,7 @@
 package com.example.vacationplanner.UI;
 
 import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +21,7 @@ import com.example.vacationplanner.R;
 import com.example.vacationplanner.database.Repository;
 import com.example.vacationplanner.entities.Excursion;
 import com.example.vacationplanner.entities.Vacation;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,7 +62,7 @@ public class ExcursionDetails extends AppCompatActivity {
         editExcursionTitle = findViewById(R.id.excursionTitle);
         dateButton = findViewById(R.id.excursionDateButton);
 
-        excursionID = getIntent().getIntExtra("excursionID", -1);
+        excursionID = getIntent().getIntExtra("id", -1);
         excursionTitle = getIntent().getStringExtra("title");
         excursionDate = getIntent().getStringExtra("date");
         vacationID = getIntent().getIntExtra("vacationID", -1);
@@ -105,7 +107,15 @@ public class ExcursionDetails extends AppCompatActivity {
                 Date dateSelected = calendarDate.getTime();
 
                 if (dateSelected.before(startDate) || dateSelected.after(endDate)){
-                    Toast.makeText(ExcursionDetails.this, "Selected date must be during vacation dates. Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(ExcursionDetails.this, "Selected date must be during vacation dates. Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Toast.LENGTH_LONG).show();
+                    //use snackbar since toast is being cut off:
+                    Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Selected date must be during vacation dates. Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setBackgroundTint(Color.parseColor("#96EDE9"));
+                    snackbar.setTextColor(Color.parseColor("#0D1E5F"));
+                    snackbar.setActionTextColor(Color.parseColor("#ED3358"));
+                    snackbar.setTextMaxLines(5);
+                    snackbar.setAction("Dismiss", v -> {}).show();
+
                 }
                 else {
                     updateButtonLabel();
@@ -154,13 +164,20 @@ public class ExcursionDetails extends AppCompatActivity {
         if (item.getItemId() == R.id.excursionsave){
             String stringExcursionDate = sdf.format(calendarDate.getTime());
 
-            // convert excursionDate, vacationStartDate, vacationEndDate back to Date objects so we can compare dates
+            // compare date objects (date, startDate, endDate)
             try {
                 Date date = sdf.parse(stringExcursionDate);
                 assert date != null;
 
                 if (date.before(startDate) || date.after(endDate)){ //if the date is not during the associated vacation:
-                    Toast.makeText(ExcursionDetails.this, "Selected date must be during vacation dates. Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(ExcursionDetails.this, "Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Toast.LENGTH_LONG).show();
+                    //use snackbar since toast is being cut off:
+                    Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Selected date must be during vacation dates. Choose a date between " + vacationStartDate + " and " + vacationEndDate + ".", Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setBackgroundTint(Color.parseColor("#96EDE9"));
+                    snackbar.setTextColor(Color.parseColor("#0D1E5F"));
+                    snackbar.setActionTextColor(Color.parseColor("#ED3358"));
+                    snackbar.setTextMaxLines(5);
+                    snackbar.setAction("Dismiss", v -> {}).show();
                 }
                 else {
                     Excursion excursion;
@@ -172,12 +189,14 @@ public class ExcursionDetails extends AppCompatActivity {
                             excursionID = repository.getmAllExcursions().get(repository.getmAllExcursions().size() - 1).getExcursionID() + 1;
                             excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
                             repository.insert(excursion);
+                            Toast.makeText(ExcursionDetails.this, excursion.getExcursionTitle() + " excursion was added.", Toast.LENGTH_LONG).show();
                             this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
                         }
                     }
                     else { //existing excursion was modified by user so we need to update it instead:
                         excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
                         repository.update(excursion);
+                        Toast.makeText(ExcursionDetails.this, excursion.getExcursionTitle() + " excursion was updated.", Toast.LENGTH_LONG).show();
                         this.finish();
                     }
                 }
@@ -194,7 +213,7 @@ public class ExcursionDetails extends AppCompatActivity {
             }
 
             repository.delete(currentExcursion);
-            Toast.makeText(ExcursionDetails.this, currentExcursion.getExcursionTitle() + " was deleted.", Toast.LENGTH_LONG).show();
+            Toast.makeText(ExcursionDetails.this, currentExcursion.getExcursionTitle() + " excursion was deleted.", Toast.LENGTH_LONG).show();
             ExcursionDetails.this.finish();
         }
 
