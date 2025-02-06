@@ -96,6 +96,9 @@ public class VacationList extends AppCompatActivity {
             repository.insert(excursion);
             excursion = new Excursion(0, "Boat Tour", "02/07/25", 1);
             repository.insert(excursion);
+            //the following 2 lines will refresh the page showing the added vacations above if 'Add sample code' menu item was selected
+            this.finish();
+            startActivity(getIntent());
 
             return true;
         }
