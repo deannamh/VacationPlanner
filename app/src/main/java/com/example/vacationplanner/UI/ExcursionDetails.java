@@ -1,6 +1,10 @@
 package com.example.vacationplanner.UI;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -215,6 +219,26 @@ public class ExcursionDetails extends AppCompatActivity {
             repository.delete(currentExcursion);
             Toast.makeText(ExcursionDetails.this, currentExcursion.getExcursionTitle() + " excursion was deleted.", Toast.LENGTH_LONG).show();
             ExcursionDetails.this.finish();
+        }
+
+        if (item.getItemId() == R.id.excursionalert){
+            String dateFromScreen = dateButton.getText().toString();
+
+            Date excursionDate = null;
+
+            try {
+                excursionDate = sdf.parse(dateFromScreen);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+            Long trigger = excursionDate.getTime();
+            Intent intent = new Intent(ExcursionDetails.this, MyReceiver.class);
+            intent.putExtra("key", "Excursion: " + excursionTitle + " is starting today!");
+            PendingIntent sender = PendingIntent.getBroadcast(ExcursionDetails.this, ++MainActivity.numAlert, intent, PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, sender);
+            return true;
         }
 
         if (item.getItemId() == android.R.id.home) { // for a back button
