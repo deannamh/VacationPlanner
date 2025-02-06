@@ -101,12 +101,12 @@
                     android:id="@+id/startDateButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="#ED3358"
+                    android:backgroundTint="#2570d4"
                     android:text="Select start date"
                     android:textAlignment="center"
                     android:textColorLink="#0D1E5F"
                     android:textStyle="normal|bold"
-                    android:typeface="normal"/>
+                    android:typeface="normal" />
             </LinearLayout>
 
             <LinearLayout
@@ -127,12 +127,12 @@
                     android:id="@+id/endDateButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="#ED3358"
+                    android:backgroundTint="#2570d4"
                     android:text="Select end date"
                     android:textAlignment="center"
                     android:textColorLink="#0D1E5F"
                     android:textStyle="normal|bold"
-                    android:typeface="normal"/>
+                    android:typeface="normal" />
 
             </LinearLayout>
 
@@ -160,7 +160,7 @@
         android:layout_marginBottom="28dp"
         android:clickable="true"
         android:contentDescription="floating action button"
-        app:backgroundTint="#ED3358"
+        app:backgroundTint="#2570d4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -56,7 +56,7 @@
         android:layout_marginBottom="32dp"
         android:clickable="true"
         android:contentDescription="Add vacation button"
-        app:backgroundTint="#ED3358"
+        app:backgroundTint="#2570d4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

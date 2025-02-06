@@ -29,10 +29,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="388dp"
+        android:backgroundTint="#2570d4"
         android:text="Select date"
         android:textAlignment="center"
         android:textColorLink="#0D1E5F"
-        android:backgroundTint="#ED3358"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
