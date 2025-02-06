@@ -12,7 +12,7 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="124dp"
+        android:layout_marginBottom="132dp"
         android:backgroundTint="#2570d4"
         android:text="Get Started"
         android:textAlignment="center"
@@ -28,28 +28,14 @@
         android:id="@+id/imageView"
         android:layout_width="282dp"
         android:layout_height="342dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginTop="128dp"
         android:contentDescription="plane and sunset"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/vacationplannericon" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vacation Planner"
-        android:textColor="#0D1E5F"
-        android:textSize="34sp"
-        android:textStyle="bold"
-        android:typeface="serif"
-        app:layout_constraintBottom_toTopOf="@+id/imageView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.405" />
+        app:layout_constraintVertical_bias="0.049"
+        app:srcCompat="@drawable/vacationplannericon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

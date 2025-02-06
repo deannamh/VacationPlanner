@@ -193,14 +193,14 @@ public class ExcursionDetails extends AppCompatActivity {
                             excursionID = repository.getmAllExcursions().get(repository.getmAllExcursions().size() - 1).getExcursionID() + 1;
                             excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
                             repository.insert(excursion);
-                            Toast.makeText(ExcursionDetails.this, excursion.getExcursionTitle() + " excursion was added.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() + " was added.", Toast.LENGTH_LONG).show();
                             this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
                         }
                     }
                     else { //existing excursion was modified by user so we need to update it instead:
                         excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
                         repository.update(excursion);
-                        Toast.makeText(ExcursionDetails.this, excursion.getExcursionTitle() + " excursion was updated.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() + " was updated.", Toast.LENGTH_LONG).show();
                         this.finish();
                     }
                 }
@@ -217,7 +217,7 @@ public class ExcursionDetails extends AppCompatActivity {
             }
 
             repository.delete(currentExcursion);
-            Toast.makeText(ExcursionDetails.this, currentExcursion.getExcursionTitle() + " excursion was deleted.", Toast.LENGTH_LONG).show();
+            Toast.makeText(ExcursionDetails.this, "Excursion: " + currentExcursion.getExcursionTitle() + " was deleted.", Toast.LENGTH_LONG).show();
             ExcursionDetails.this.finish();
         }
 
