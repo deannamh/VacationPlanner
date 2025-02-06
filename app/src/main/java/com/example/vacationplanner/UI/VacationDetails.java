@@ -339,9 +339,30 @@ public class VacationDetails extends AppCompatActivity {
 
         }
 
-//        if (item.getItemId() == R.id.vacationshare){
-//
-//        }
+        if (item.getItemId() == R.id.vacationshare){
+            Intent sentIntent = new Intent();
+            sentIntent.setAction(Intent.ACTION_SEND);
+
+            //need to get all the vacation details to share (vacation title, hotel, start and end dates, associated excursions)
+            StringBuilder vacationDetails = new StringBuilder();
+
+            vacationDetails.append("Vacation title: " + editTitle.getText().toString() + "\n");
+            vacationDetails.append("Hotel: " + editHotelName.getText().toString() + "\n");
+            vacationDetails.append("Start date: " + startDateButton.getText().toString() + "\n");
+            vacationDetails.append("End date: " + endDateButton.getText().toString() + "\n");
+
+            List<Excursion> associatedExcursions = repository.getAssociatedExcursions(vacationID);
+            for (Excursion e: associatedExcursions){
+                vacationDetails.append("Excursion title: " + e.getExcursionTitle() + " , Excursion Date: " + e.getExcursionDate() + "\n");
+            }
+
+            sentIntent.putExtra(Intent.EXTRA_TEXT, vacationDetails.toString());
+            sentIntent.putExtra(Intent.EXTRA_TITLE, "Shared Vacation Details");
+            sentIntent.setType("text/plain");
+            Intent shareIntent = Intent.createChooser(sentIntent, null);
+            startActivity(shareIntent);
+            return true;
+        }
 
         if (item.getItemId() == android.R.id.home) { // for a back button
             this.finish();
