@@ -1,6 +1,9 @@
 package com.example.vacationplanner.UI;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -82,8 +85,14 @@ public class VacationDetails extends AppCompatActivity {
         if (startDate != null) {
             try {
                 Date dateStart = sdf.parse(startDate);
-                Date dateEnd = sdf.parse(endDate);
                 calendarStartDate.setTime(dateStart);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (endDate != null){
+            try{
+                Date dateEnd = sdf.parse(endDate);
                 calendarEndDate.setTime(dateEnd);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
@@ -110,8 +119,7 @@ public class VacationDetails extends AppCompatActivity {
         });
 
         // when user picks date from datepicker dialog box, set Calendar object to that date and update the start button label.
-        // this also ensures the correct date format will be used since user selects a date from a calendar instead of enters it manually
-        // we are also validating that the chosen date is after the current date
+        // this also ensures the correct date format will be used since user selects a date from a calendar instead of entering it manually
         dpStartDate = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -225,16 +233,16 @@ public class VacationDetails extends AppCompatActivity {
                 assert dateEnd != null;
                 assert dateStart != null;
 
-
+                // we are validating that the chosen end date is after the start date
                 //if the end date is not AFTER start date (can't be the same day or before)
                 if (!dateEnd.after(dateStart)) {
                     //Toast.makeText(VacationDetails.this, "Select an end date after the start date: " + startDate + ".", Toast.LENGTH_LONG).show();
                     displaySnackbar("Select an end date after the start date: " + stringStartDate + ".");
                 }
-                else if (!dateStart.after(currentDate)) { //if the start date is not AFTER current date (can't be the same day or before)
-                    //Toast.makeText(VacationDetails.this, "Please select a start date later than the current date: " + currDate + ".", Toast.LENGTH_LONG).show();
-                    displaySnackbar("Select a start date after the current date: " + currDate + ".");
-                }
+//                else if (!dateStart.after(currentDate)) { //if the start date is not AFTER current date (can't be the same day or before)
+//                    //Toast.makeText(VacationDetails.this, "Please select a start date later than the current date: " + currDate + ".", Toast.LENGTH_LONG).show();
+//                    displaySnackbar("Select a start date after the current date: " + currDate + ".");
+//                }
                 else {
                     //need to check if changing start and end dates affect any associated excursions
                     List<Excursion> associatedExcursions = repository.getAssociatedExcursions(vacationID);
@@ -261,14 +269,14 @@ public class VacationDetails extends AppCompatActivity {
                                 vacationID = repository.getmAllVacations().get(repository.getmAllVacations().size() - 1).getVacationID() + 1;
                                 vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
                                 repository.insert(vacation);
-                                Toast.makeText(VacationDetails.this, vacation.getTitle() + " vacation was added.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(VacationDetails.this, "Vacation: " + vacation.getTitle() + " was added.", Toast.LENGTH_LONG).show();
                                 //displaySnackbar(vacation.getTitle() + " vacation was added.");
                                 this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
                             }
                         } else { //existing vacation was modified by user so we need to update it instead:
                             vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
                             repository.update(vacation);
-                            Toast.makeText(VacationDetails.this, vacation.getTitle() + " vacation was updated.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(VacationDetails.this, "Vacation: " + vacation.getTitle() + " was updated.", Toast.LENGTH_LONG).show();
                             //displaySnackbar(vacation.getTitle() + " vacation was updated.");
                             this.finish();
                         }
@@ -287,6 +295,7 @@ public class VacationDetails extends AppCompatActivity {
                 if (v.getVacationID() == vacationID) currentVacation = v;
             }
 
+            // need to make sure there are no excursions added to a vacation before deleting it
             numExcursions = 0;
             List<Excursion> allExcursions = repository.getmAllExcursions();
 
@@ -296,9 +305,8 @@ public class VacationDetails extends AppCompatActivity {
 
             if (numExcursions == 0) {
                 repository.delete(currentVacation);
-                Toast.makeText(VacationDetails.this, currentVacation.getTitle() + " vacation was deleted.", Toast.LENGTH_LONG).show();
+                Toast.makeText(VacationDetails.this, "Vacation: " + currentVacation.getTitle() + " was deleted.", Toast.LENGTH_LONG).show();
                 //displaySnackbar(currentVacation.getTitle() + " vacation was deleted.");
-
                 this.finish();
             } else {
                 //Toast.makeText(VacationDetails.this, "Cannot delete a vacation with excursions.", Toast.LENGTH_LONG).show();
@@ -306,6 +314,34 @@ public class VacationDetails extends AppCompatActivity {
             }
 
         }
+
+        if (item.getItemId() == R.id.vacationalert){
+            String startDateFromScreen = startDateButton.getText().toString();
+            String endDateFromScreen = endDateButton.getText().toString();
+
+            Date startDate = null;
+            Date endDate = null;
+
+            try {
+                startDate = sdf.parse(startDateFromScreen);
+                endDate = sdf.parse(endDateFromScreen);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (startDate != null) {
+                setNotification(startDate.getTime(), "Vacation: " + title + " is starting today!");
+            }
+
+            if (endDate != null) {
+                setNotification(endDate.getTime(), "Vacation: " + title + " is ending today.");
+            }
+
+        }
+
+//        if (item.getItemId() == R.id.vacationshare){
+//
+//        }
 
         if (item.getItemId() == android.R.id.home) { // for a back button
             this.finish();
@@ -332,5 +368,13 @@ public class VacationDetails extends AppCompatActivity {
         snackbar.setActionTextColor(Color.parseColor("#ED3358"));
         snackbar.setTextMaxLines(5);
         snackbar.show();
+    }
+
+    private void setNotification(Long trigger, String alertMessage ){
+        Intent intent = new Intent(VacationDetails.this, MyReceiver.class);
+        intent.putExtra("key", alertMessage);
+        PendingIntent sender = PendingIntent.getBroadcast(VacationDetails.this, ++MainActivity.numAlert, intent, PendingIntent.FLAG_IMMUTABLE);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, sender);
     }
 }
