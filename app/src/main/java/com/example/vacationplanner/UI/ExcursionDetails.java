@@ -238,6 +238,8 @@ public class ExcursionDetails extends AppCompatActivity {
             PendingIntent sender = PendingIntent.getBroadcast(ExcursionDetails.this, ++MainActivity.numAlert, intent, PendingIntent.FLAG_IMMUTABLE);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, sender);
+
+            Toast.makeText(ExcursionDetails.this, "Excursion alert set.", Toast.LENGTH_LONG).show();
             return true;
         }
 

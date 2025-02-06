@@ -336,6 +336,8 @@ public class VacationDetails extends AppCompatActivity {
             if (endDate != null) {
                 setNotification(endDate.getTime(), "Vacation: " + title + " is ending today.");
             }
+            Toast.makeText(VacationDetails.this, "Vacation alert set.", Toast.LENGTH_LONG).show();
+
 
         }
 
