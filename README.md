@@ -16,7 +16,7 @@ Finally, the app also allows users to share the vacation details. All of the vac
 ## Set-up
 1. Clone the project to the Android Studio Ladybug IDE:
 * File > New > Project from Version Control...
-* For the URL, use: https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android.git
+* For the URL, use: https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android/-/tree/working_branch?ref_type=heads
 * Click Clone
 
 2. Open the Device Manager and click the + icon to add a new virtual device. This sets up the emulator to run the Vacation Planner application. In the Device Manager panel, you can also choose to pair a physical android device using wifi.
@@ -50,5 +50,5 @@ Finally, the app also allows users to share the vacation details. All of the vac
 This app is built on Android 15.
 
 # Link to Git Repository
-[https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android.git](https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android.git)
+[https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android/-/tree/working_branch?ref_type=heads](https://gitlab.com/wgu-gitlab-environment/student-repos/dmahar3/d308-mobile-application-development-android/-/tree/working_branch?ref_type=heads)
 
