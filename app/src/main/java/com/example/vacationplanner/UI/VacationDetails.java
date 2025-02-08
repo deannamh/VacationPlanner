@@ -329,11 +329,21 @@ public class VacationDetails extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
 
-            if (startDate != null) {
+            // we need to compare the date portion of getTime() to make sure the alerts go off on the right date, regardless of the time
+            // so set the time portion of the date to 00:00:00:00
+            Calendar myCalendar = Calendar.getInstance();
+            myCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            myCalendar.set(Calendar.MINUTE, 0);
+            myCalendar.set(Calendar.SECOND, 0);
+            myCalendar.set(Calendar.MILLISECOND, 0);
+            Date currentDate = myCalendar.getTime();
+
+            //we want to make sure the startDate on the screen is not before the current date (needs to be today or later) to trigger the notification
+            if (startDate != null && !startDate.before(currentDate)) {
                 setNotification(startDate.getTime(), "Vacation: " + title + " is starting today!");
             }
-
-            if (endDate != null) {
+            // we want the endDate on the screen to be today or later to trigger the notification
+            if (endDate != null && !endDate.before(currentDate)) {
                 setNotification(endDate.getTime(), "Vacation: " + title + " is ending today.");
             }
             Toast.makeText(VacationDetails.this, "Vacation alert set.", Toast.LENGTH_LONG).show();
