@@ -1,18 +1,27 @@
 package com.example.vacationplanner.entities;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+import com.google.firebase.firestore.DocumentId;
+import com.google.firebase.firestore.Exclude;
+import java.util.UUID;
 
-@Entity(tableName = "vacations")
+
 public class Vacation {
-    @PrimaryKey(autoGenerate = true)
-    private int vacationID;
+    //@DocumentId
+    private String vacationID;
+    private String userID;
     private String title;
     private String hotelName;
     private String startDate;
     private String endDate;
+    private boolean notifyStart;
+    private boolean notifyEnd;
 
-    public Vacation(int vacationID, String title, String hotelName, String startDate, String endDate) {
+
+    public Vacation(){
+
+    }
+
+    public Vacation(String vacationID, String title, String hotelName, String startDate, String endDate) {
         this.vacationID = vacationID;
         this.title = title;
         this.hotelName = hotelName;
@@ -20,12 +29,30 @@ public class Vacation {
         this.endDate = endDate;
     }
 
-    public int getVacationID() {
+    public Vacation(String vacationID, String userID, String title, String hotelName, String startDate, String endDate, boolean notifyStart, boolean notifyEnd) {
+        this.vacationID = vacationID;
+        this.userID = userID;
+        this.title = title;
+        this.hotelName = hotelName;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.notifyStart = notifyStart;
+        this.notifyEnd = notifyEnd;
+    }
+
+    public String getVacationID() {
         return vacationID;
     }
 
-    public void setVacationID(int vacationID) {
+    public void setVacationID(String vacationID) {
         this.vacationID = vacationID;
+    }
+
+    public String getUserId() {
+        return userID;
+    }
+    public void setUserId(String userId) {
+        this.userID = userId;
     }
 
     public String getTitle() {
@@ -62,5 +89,20 @@ public class Vacation {
 
     public void setEndDate(String endDate) {
         this.endDate = endDate;
+    }
+    public boolean isNotifyStart() {
+        return notifyStart;
+    }
+
+    public void setNotifyStart(boolean notifyStart) {
+        this.notifyStart = notifyStart;
+    }
+
+    public boolean isNotifyEnd() {
+        return notifyEnd;
+    }
+
+    public void setNotifyEnd(boolean notifyEnd) {
+        this.notifyEnd = notifyEnd;
     }
 }

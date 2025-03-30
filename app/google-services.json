@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1024325513328",
+    "project_id": "vacation-planner-c657f",
+    "storage_bucket": "vacation-planner-c657f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024325513328:android:f772de8e9ed5cdef4fc4b5",
+        "android_client_info": {
+          "package_name": "com.example.vacationplanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCklmguyNi_VAtRthb7G2NdLCLMS5VyXq4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

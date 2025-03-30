@@ -10,5 +10,6 @@
         android:id="@+id/vacationalert"/>
     <item android:title="Share Vacation Details"
         android:id="@+id/vacationshare"/>
+    <item android:title="Logout" android:id="@+id/logoutVacationDetails" />
 
 </menu>

@@ -2,6 +2,7 @@ package com.example.vacationplanner.UI;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.vacationplanner.R;
 import com.example.vacationplanner.entities.Vacation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.VacationViewHolder> {
@@ -23,6 +25,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     public VacationAdapter(Context context){
         mInflater = LayoutInflater.from(context);
         this.context = context;
+        this.mVacations = new ArrayList<>();
     }
 
     public class VacationViewHolder extends RecyclerView.ViewHolder {
@@ -36,6 +39,9 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     final Vacation current = mVacations.get(position);
+
+                    Log.d("VacationAdapter", "Clicked vacation with ID: " + current.getVacationID());
+
                     Intent intent = new Intent(context, VacationDetails.class); // click item to see VacationDetails
                     intent.putExtra("id", current.getVacationID());
                     intent.putExtra("title", current.getTitle());
@@ -58,7 +64,7 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     // onBindViewHolder -> puts what we will display on the RecyclerView
     @Override
     public void onBindViewHolder(@NonNull VacationAdapter.VacationViewHolder holder, int position) {
-        if (mVacations != null){
+        if (mVacations != null && position < mVacations.size()){
            Vacation current = mVacations.get(position);
            String title = current.getTitle();
            holder.vacationItemView.setText(title);
@@ -78,7 +84,12 @@ public class VacationAdapter extends RecyclerView.Adapter<VacationAdapter.Vacati
     }
 
     public void setVacations(List<Vacation> vacations){
-        mVacations = vacations;
-        notifyDataSetChanged();
+        if(vacations != null) {
+            for(Vacation v : vacations) {
+                Log.d("VacationAdapter", "Loaded vacation: " + v.getTitle() + ", ID: " + v.getVacationID());
+            }
+            mVacations = vacations;
+            notifyDataSetChanged();
+        }
     }
 }

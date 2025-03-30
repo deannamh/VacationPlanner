@@ -64,9 +64,8 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
             Excursion current = mExcursions.get(position);
             String title = current.getExcursionTitle();
             String date = current.getExcursionDate();
-            int vacationID = current.getVacationID();
+            String vacationID = current.getVacationID(); //change from int to string for firestore
             holder.excursionItemView.setText(title);
-            //holder.excursionItemView2.setText(Integer.toString(vacationID));
             holder.excursionItemView2.setText(date);
         }
         else {

@@ -1,12 +1,14 @@
 package com.example.vacationplanner.UI;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,11 +25,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vacationplanner.R;
-import com.example.vacationplanner.database.Repository;
+import com.example.vacationplanner.database.ExcursionRepository;
+import com.example.vacationplanner.database.VacationRepository;
 import com.example.vacationplanner.entities.Excursion;
 import com.example.vacationplanner.entities.Vacation;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,10 +40,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class VacationDetails extends AppCompatActivity {
 
-    int vacationID;
+    String vacationID;
     String title;
     String hotelName;
     String startDate;
@@ -56,16 +61,27 @@ public class VacationDetails extends AppCompatActivity {
     final Calendar calendarEndDate = Calendar.getInstance();
     final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
-    Repository repository;
+    // for Room Database:
+    //Repository repository;
+    //Vacation currentVacation;
+    //int numExcursions;
+
+    // for Firebase:
+    VacationRepository vacationRepository;
+    ExcursionRepository excursionRepository;
 
     Vacation currentVacation;
-    int numExcursions;
+    List<Excursion> associatedExcursions = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_vacation_details);
+
+        // initialize firebase repositories:
+        vacationRepository = new VacationRepository();
+        excursionRepository = new ExcursionRepository();
 
         editTitle = findViewById(R.id.titleText);
         editHotelName = findViewById(R.id.hotelText);
@@ -73,7 +89,9 @@ public class VacationDetails extends AppCompatActivity {
         endDateButton = findViewById(R.id.endDateButton);
 
         //get values from RecyclerView that were sent over in Intent
-        vacationID = getIntent().getIntExtra("id", -1);
+        vacationID = getIntent().getStringExtra("id");
+        Log.d("VacationDetails", "Received vacation ID: " + vacationID);
+
         title = getIntent().getStringExtra("title");
         hotelName = getIntent().getStringExtra("hotel");
         startDate = getIntent().getStringExtra("startdate");
@@ -166,7 +184,7 @@ public class VacationDetails extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (vacationID == -1) { //vacation is not saved yet
+                if (vacationID == null || vacationID.isEmpty()) { //vacation is not saved yet
                     Toast.makeText(VacationDetails.this, "Save vacation to add excursions", Toast.LENGTH_LONG).show();
                 } else {
                     Intent intent = new Intent(VacationDetails.this, ExcursionDetails.class);
@@ -180,15 +198,17 @@ public class VacationDetails extends AppCompatActivity {
 
         // populate excursionrecyclerview on vacation details activity associated with a vacationID
         RecyclerView recyclerView = findViewById(R.id.excursionrecyclerview);
-        repository = new Repository(getApplication());
         final ExcursionAdapter excursionAdapter = new ExcursionAdapter(this);
         recyclerView.setAdapter(excursionAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // excursionAdapter.setExcursions(repository.getmAllExcursions()); // the excursionrecyclerview will show all excursions
-        // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
-        List<Excursion> filteredExcursions = repository.getAssociatedExcursions(vacationID);
-        excursionAdapter.setExcursions(filteredExcursions);
 
+        // we want the excursionrecyclerview to show the excursion associated with a specific vacation id:
+        if (vacationID != null && !vacationID.isEmpty()) {
+            excursionRepository.getAssociatedExcursions(vacationID).observe(this, excursions -> {
+                associatedExcursions = excursions;
+                excursionAdapter.setExcursions(excursions);
+            });
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -200,13 +220,26 @@ public class VacationDetails extends AppCompatActivity {
     @Override
     protected void onResume() { //gets excursions associated with vacation id and updates the recyclerview
         super.onResume();
-        repository = new Repository(getApplication());
-        List<Excursion> filteredExcursions = repository.getAssociatedExcursions(vacationID);
-        RecyclerView recyclerView = findViewById(R.id.excursionrecyclerview);
-        final ExcursionAdapter excursionAdapter = new ExcursionAdapter(this);
-        recyclerView.setAdapter(excursionAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        excursionAdapter.setExcursions(filteredExcursions);
+
+        if (vacationID != null && !vacationID.isEmpty()) {
+            RecyclerView recyclerView = findViewById(R.id.excursionrecyclerview);
+            final ExcursionAdapter excursionAdapter = new ExcursionAdapter(this);
+            recyclerView.setAdapter(excursionAdapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            excursionRepository.getAssociatedExcursions(vacationID).observe(this, excursions -> {
+                associatedExcursions = excursions;
+                Log.d("VacationDetails", "Loaded " + excursions.size() + " excursions for vacation ID: " + vacationID);
+
+                // Debug the contents
+                for (Excursion e : excursions) {
+                    Log.d("VacationDetails", "Excursion: " + e.getExcursionTitle() + ", Date: " + e.getExcursionDate());
+                }
+
+                excursionAdapter.setExcursions(excursions);
+            });
+        }
+
         updateButtonLabelEnd();
         updateButtonLabelStart();
     }
@@ -239,45 +272,51 @@ public class VacationDetails extends AppCompatActivity {
                     //Toast.makeText(VacationDetails.this, "Select an end date after the start date: " + startDate + ".", Toast.LENGTH_LONG).show();
                     displaySnackbar("Select an end date after the start date: " + stringStartDate + ".");
                 }
-//                else if (!dateStart.after(currentDate)) { //if the start date is not AFTER current date (can't be the same day or before)
-//                    //Toast.makeText(VacationDetails.this, "Please select a start date later than the current date: " + currDate + ".", Toast.LENGTH_LONG).show();
-//                    displaySnackbar("Select a start date after the current date: " + currDate + ".");
-//                }
+
                 else {
                     //need to check if changing start and end dates affect any associated excursions
-                    List<Excursion> associatedExcursions = repository.getAssociatedExcursions(vacationID);
-                    int numAssociatedExcursions = 0;
+                    int numOutOfRangeExcursions = 0;
 
                     for (Excursion e : associatedExcursions) {
                         Date excursionDate = sdf.parse(e.getExcursionDate());
                         assert excursionDate != null;
 
                         if (excursionDate.before(dateStart) || excursionDate.after(dateEnd)) {  //excursion can't be before vacation starts or after it ends
-                            ++numAssociatedExcursions;
+                            ++numOutOfRangeExcursions;
                         }
                     }
 
-                    if (numAssociatedExcursions > 0) { //means there are excursions within original vacation dates that would be affected by new dates
+                    if (numOutOfRangeExcursions > 0) { //means there are excursions within original vacation dates that would be affected by new dates
                         displaySnackbar("Associated excursion(s) should be deleted or modified first.");
                     }
                     else {
                         Vacation vacation;
-                        if (vacationID == -1) { //if vacationID does not exist from intent extra, set the vacationID to 1
-                            if (repository.getmAllVacations().isEmpty()) {
-                                vacationID = 1;
-                            } else { // increment last vacationID
-                                vacationID = repository.getmAllVacations().get(repository.getmAllVacations().size() - 1).getVacationID() + 1;
-                                vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
-                                repository.insert(vacation);
-                                Toast.makeText(VacationDetails.this, "Vacation: " + vacation.getTitle() + " was added.", Toast.LENGTH_LONG).show();
-                                //displaySnackbar(vacation.getTitle() + " vacation was added.");
-                                this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
-                            }
-                        } else { //existing vacation was modified by user so we need to update it instead:
+                        if (vacationID == null || vacationID.isEmpty()) { //if vacationID does not exist from intent extra
+                            vacationID = UUID.randomUUID().toString();
+                            Log.d("VacationDetails", "Creating new vacation with ID: " + vacationID);
+
                             vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
-                            repository.update(vacation);
+
+                            // set userId field to logged in user's id
+                            vacation.setUserId(vacationRepository.getCurrentUserId());
+
+                            // insert into firebase
+                            vacationRepository.insert(vacation);
+                            Toast.makeText(VacationDetails.this, "Vacation: " + vacation.getTitle() + " was added.", Toast.LENGTH_LONG).show();
+                            this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
+                        }
+                        else { // existing vacation was modified by user so we need to update it instead:
+                            Log.d("VacationDetails", "Updating existing vacation with ID: " + vacationID);
+                            vacation = new Vacation(vacationID, editTitle.getText().toString(), editHotelName.getText().toString(), stringStartDate, stringEndDate);
+                            // need to save current userid:
+                            if (currentVacation != null) {
+                                vacation.setUserId(currentVacation.getUserId());
+                            } else {
+                                vacation.setUserId(vacationRepository.getCurrentUserId());
+                            }
+
+                            vacationRepository.update(vacation);
                             Toast.makeText(VacationDetails.this, "Vacation: " + vacation.getTitle() + " was updated.", Toast.LENGTH_LONG).show();
-                            //displaySnackbar(vacation.getTitle() + " vacation was updated.");
                             this.finish();
                         }
                     }
@@ -289,31 +328,21 @@ public class VacationDetails extends AppCompatActivity {
         }
 
         if (item.getItemId() == R.id.vacationdelete) {
-            List<Vacation> allVacations = repository.getmAllVacations();
-
-            for (Vacation v : allVacations) {
-                if (v.getVacationID() == vacationID) currentVacation = v;
+            if (vacationID != null && !vacationID.isEmpty()) {
+                // check if there are associated excursions for this vacation before deleting:
+                if (associatedExcursions.isEmpty()) {
+                    // delete by vacationID using helper method
+                    vacationRepository.deleteById(vacationID);
+                    Toast.makeText(VacationDetails.this, "Vacation: " + title + " was deleted.",
+                            Toast.LENGTH_LONG).show();
+                    this.finish();
+                } else {
+                    displaySnackbar("Cannot delete a vacation with excursions.");
+                }
             }
-
-            // need to make sure there are no excursions added to a vacation before deleting it
-            numExcursions = 0;
-            List<Excursion> allExcursions = repository.getmAllExcursions();
-
-            for (Excursion e : allExcursions) {
-                if (e.getVacationID() == vacationID) numExcursions++;
-            }
-
-            if (numExcursions == 0) {
-                repository.delete(currentVacation);
-                Toast.makeText(VacationDetails.this, "Vacation: " + currentVacation.getTitle() + " was deleted.", Toast.LENGTH_LONG).show();
-                //displaySnackbar(currentVacation.getTitle() + " vacation was deleted.");
-                this.finish();
-            } else {
-                //Toast.makeText(VacationDetails.this, "Cannot delete a vacation with excursions.", Toast.LENGTH_LONG).show();
-                displaySnackbar("Cannot delete a vacation with excursions.");
-            }
-
         }
+
+
 
         if (item.getItemId() == R.id.vacationalert){
             String startDateFromScreen = startDateButton.getText().toString();
@@ -330,7 +359,7 @@ public class VacationDetails extends AppCompatActivity {
             }
 
             // we need to compare the date portion of getTime() to make sure the alerts go off on the right date, regardless of the time
-            // so set the time portion of the date to 00:00:00:00
+            // so set the time portion of the date to 00:00:00:00 (midnight)
             Calendar myCalendar = Calendar.getInstance();
             myCalendar.set(Calendar.HOUR_OF_DAY, 0);
             myCalendar.set(Calendar.MINUTE, 0);
@@ -348,7 +377,6 @@ public class VacationDetails extends AppCompatActivity {
             }
             Toast.makeText(VacationDetails.this, "Vacation alert set.", Toast.LENGTH_LONG).show();
 
-
         }
 
         if (item.getItemId() == R.id.vacationshare){
@@ -363,7 +391,6 @@ public class VacationDetails extends AppCompatActivity {
             vacationDetails.append("Start date: " + startDateButton.getText().toString() + "\n");
             vacationDetails.append("End date: " + endDateButton.getText().toString() + "\n");
 
-            List<Excursion> associatedExcursions = repository.getAssociatedExcursions(vacationID);
             for (Excursion e: associatedExcursions){
                 vacationDetails.append("Excursion title: " + e.getExcursionTitle() + " , Excursion Date: " + e.getExcursionDate() + "\n");
             }
@@ -373,6 +400,11 @@ public class VacationDetails extends AppCompatActivity {
             sentIntent.setType("text/plain");
             Intent shareIntent = Intent.createChooser(sentIntent, null);
             startActivity(shareIntent);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.logoutVacationDetails) {
+            confirmLogout();
             return true;
         }
 
@@ -409,5 +441,22 @@ public class VacationDetails extends AppCompatActivity {
         PendingIntent sender = PendingIntent.getBroadcast(VacationDetails.this, ++MainActivity.numAlert, intent, PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, sender);
+    }
+
+    private void confirmLogout() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // sign out from Firebase
+                    FirebaseAuth.getInstance().signOut();
+
+                    // go bcak to login screen
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

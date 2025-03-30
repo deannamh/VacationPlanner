@@ -1,6 +1,7 @@
 package com.example.vacationplanner.UI;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -15,17 +16,18 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.vacationplanner.R;
-import com.example.vacationplanner.database.Repository;
+import com.example.vacationplanner.database.ExcursionRepository;
+import com.example.vacationplanner.database.VacationRepository;
 import com.example.vacationplanner.entities.Excursion;
 import com.example.vacationplanner.entities.Vacation;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,12 +35,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class ExcursionDetails extends AppCompatActivity {
-    int excursionID;
+    String excursionID; //changed from int to string
     String excursionTitle;
     String excursionDate;
-    int vacationID;
+    String vacationID; // changed from int to string
 
     EditText editExcursionTitle;
 
@@ -46,7 +49,9 @@ public class ExcursionDetails extends AppCompatActivity {
     DatePickerDialog.OnDateSetListener dpDate;
     final Calendar calendarDate = Calendar.getInstance();
 
-    Repository repository = new Repository(getApplication());
+    //Repository repository = new Repository(getApplication());
+    VacationRepository vacationRepository;
+    ExcursionRepository excursionRepository;
 
     Vacation currentVacation;
     Excursion currentExcursion;
@@ -60,16 +65,19 @@ public class ExcursionDetails extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_excursion_details);
+
+        // initialize firebase repositories since we are no longer using Room database
+        vacationRepository = new VacationRepository();
+        excursionRepository = new ExcursionRepository();
 
         editExcursionTitle = findViewById(R.id.excursionTitle);
         dateButton = findViewById(R.id.excursionDateButton);
 
-        excursionID = getIntent().getIntExtra("id", -1);
+        excursionID = getIntent().getStringExtra("id"); // changed from getIntExtra
         excursionTitle = getIntent().getStringExtra("title");
         excursionDate = getIntent().getStringExtra("date");
-        vacationID = getIntent().getIntExtra("vacationID", -1);
+        vacationID = getIntent().getStringExtra("vacationID"); // changed from getIntExtra("vacationID", -1)
 
         editExcursionTitle.setText(excursionTitle);
 
@@ -80,23 +88,42 @@ public class ExcursionDetails extends AppCompatActivity {
         }
         dateButton.setText(excursionDate);
 
-        // need to get the current vacation to check the start and end date to make sure the excursion is during that time
-        List<Vacation> allVacations = repository.getmAllVacations();
-        for (Vacation v : allVacations){
-            if (v.getVacationID() == vacationID) currentVacation = v;
-        }
+        // need to get the current vacation from Room database to check the start and end date to make sure the excursion is during that time
+//        List<Vacation> allVacations = repository.getmAllVacations();
+//        for (Vacation v : allVacations){
+//            if (v.getVacationID() == vacationID) currentVacation = v;
+//        }
+//
+//        //String for dates
+//        vacationStartDate = currentVacation.getStartDate();
+//        vacationEndDate = currentVacation.getEndDate();
+//
+//        // Convert String date to Date objects using sdf
+//        try {
+//            startDate = sdf.parse(vacationStartDate); //Date object
+//            endDate = sdf.parse(vacationEndDate); // Date object
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
 
-        //String for dates
-        vacationStartDate = currentVacation.getStartDate();
-        vacationEndDate = currentVacation.getEndDate();
+        // this will get the current vacation from Firebase to check the start and end date to make sure the excursion is during that time
+        vacationRepository.getVacationById(vacationID).observe(this, vacation -> {
+            if (vacation != null) {
+                currentVacation = vacation;
 
-        // Convert String date to Date objects using sdf
-        try {
-            startDate = sdf.parse(vacationStartDate); //Date object
-            endDate = sdf.parse(vacationEndDate); // Date object
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+                // String for dates
+                vacationStartDate = currentVacation.getStartDate();
+                vacationEndDate = currentVacation.getEndDate();
+
+                // Convert String date to Date objects using sdf
+                try {
+                    startDate = sdf.parse(vacationStartDate);
+                    endDate = sdf.parse(vacationEndDate);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
 
         // when user picks date from datepicker dialog box, set Calendar object to that date and update the start button label
@@ -184,23 +211,21 @@ public class ExcursionDetails extends AppCompatActivity {
                     snackbar.setAction("Dismiss", v -> {}).show();
                 }
                 else {
-                    Excursion excursion;
-                    if(excursionID == -1){ //if excursionID does not exist from intent extra, set it to 1
-                        if(repository.getmAllExcursions().isEmpty()) {
-                            excursionID = 1;
-                        }
-                        else { // increment last excursionID
-                            excursionID = repository.getmAllExcursions().get(repository.getmAllExcursions().size() - 1).getExcursionID() + 1;
-                            excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
-                            repository.insert(excursion);
-                            Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() + " was added.", Toast.LENGTH_LONG).show();
-                            this.finish(); //close the screen and go back to the previous screen. need to update VacationList.java next and make it update to show changes(onResume)
-                        }
+                    // Create excursion if it doesn't exist:
+                    if(excursionID == null || excursionID.isEmpty()){
+                        // New excursion - generate new ID with UUID
+                        excursionID = UUID.randomUUID().toString();
+                        Excursion excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID, false);
+                        excursionRepository.insert(excursion);
+                        Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() + " was added.", Toast.LENGTH_LONG).show();
+                        this.finish();
                     }
-                    else { //existing excursion was modified by user so we need to update it instead:
-                        excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID);
-                        repository.update(excursion);
-                        Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() + " was updated.", Toast.LENGTH_LONG).show();
+                    else {
+                        // existing excursion was modified by user so we need to update it instead:
+                        Excursion excursion = new Excursion(excursionID, editExcursionTitle.getText().toString(), stringExcursionDate, vacationID, false);
+                        excursionRepository.update(excursion);
+                        Toast.makeText(ExcursionDetails.this, "Excursion: " + excursion.getExcursionTitle() +
+                                " was updated.", Toast.LENGTH_LONG).show();
                         this.finish();
                     }
                 }
@@ -210,15 +235,17 @@ public class ExcursionDetails extends AppCompatActivity {
         }
 
         if (item.getItemId() ==  R.id.excursiondelete){
-            List<Excursion> allExcursions = repository.getmAllExcursions();
+            if (excursionID != null && !excursionID.isEmpty()) { // if excursionID is not null and excursionID is not emmpty:
+                // create a temp excursion object to delete
+                Excursion excursionToDelete = new Excursion();
+                // set excursionID and excursionID to the temp excursion
+                excursionToDelete.setExcursionID(excursionID);
+                excursionToDelete.setExcursionTitle(excursionTitle);
+                excursionRepository.delete(excursionToDelete);
 
-            for (Excursion e: allExcursions){
-                if(e.getExcursionID() == excursionID) currentExcursion = e;
+                Toast.makeText(ExcursionDetails.this, "Excursion: " + excursionTitle + " was deleted.", Toast.LENGTH_LONG).show();
+                ExcursionDetails.this.finish();
             }
-
-            repository.delete(currentExcursion);
-            Toast.makeText(ExcursionDetails.this, "Excursion: " + currentExcursion.getExcursionTitle() + " was deleted.", Toast.LENGTH_LONG).show();
-            ExcursionDetails.this.finish();
         }
 
         if (item.getItemId() == R.id.excursionalert){
@@ -243,6 +270,11 @@ public class ExcursionDetails extends AppCompatActivity {
             return true;
         }
 
+        if (item.getItemId() == R.id.logoutExcursionDetails) {
+            confirmLogout();
+            return true;
+        }
+
         if (item.getItemId() == android.R.id.home) { // for a back button
             this.finish();
             return true;
@@ -253,5 +285,22 @@ public class ExcursionDetails extends AppCompatActivity {
 
     private void updateButtonLabel() {
         dateButton.setText(sdf.format(calendarDate.getTime()));
+    }
+
+    private void confirmLogout() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // sign out from Firebase
+                    FirebaseAuth.getInstance().signOut();
+
+                    // go bcak to login screen
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

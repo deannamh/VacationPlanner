@@ -171,6 +171,7 @@
         android:id="@+id/excursionrecyclerview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:minHeight="100dp"
         android:layout_marginBottom="52dp"
         app:layout_constraintBottom_toTopOf="@id/textView11"
         app:layout_constraintTop_toBottomOf="@id/textView12"

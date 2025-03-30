@@ -1,29 +1,41 @@
 package com.example.vacationplanner.entities;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+import com.google.firebase.firestore.DocumentId;
 
-@Entity(tableName = "excursions")
+import java.util.UUID;
+
 public class Excursion {
-
-    @PrimaryKey(autoGenerate = true)
-    private int excursionID;
+    private String excursionID;
     private String excursionTitle;
     private String excursionDate;
-    private int vacationID;
+    private String vacationID; // Changed from int to String for Firestore compatibility
+    private boolean notify;
 
-    public Excursion(int excursionID, String excursionTitle, String excursionDate, int vacationID) {
+    public Excursion() {
+    }
+
+    public Excursion(String excursionID, String excursionTitle, String excursionDate, String vacationID) {
         this.excursionID = excursionID;
         this.excursionTitle = excursionTitle;
         this.excursionDate = excursionDate;
         this.vacationID = vacationID;
+        this.notify = false;
     }
 
-    public int getExcursionID() {
+    // Full constructor
+    public Excursion(String excursionID, String excursionTitle, String excursionDate, String vacationID, boolean notify) {
+        this.excursionID = excursionID;
+        this.excursionTitle = excursionTitle;
+        this.excursionDate = excursionDate;
+        this.vacationID = vacationID;
+        this.notify = notify;
+    }
+
+    public String getExcursionID() {
         return excursionID;
     }
 
-    public void setExcursionID(int excursionID) {
+    public void setExcursionID(String excursionID) {
         this.excursionID = excursionID;
     }
 
@@ -43,11 +55,19 @@ public class Excursion {
         this.excursionDate = excursionDate;
     }
 
-    public int getVacationID() {
+    public String getVacationID() {
         return vacationID;
     }
 
-    public void setVacationID(int vacationID) {
+    public void setVacationID(String vacationID) {
         this.vacationID = vacationID;
+    }
+
+    public boolean isNotify() {
+        return notify;
+    }
+
+    public void setNotify(boolean notify) {
+        this.notify = notify;
     }
 }
