@@ -19,6 +19,8 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
     private List<Excursion> mExcursions;
     private final Context context;
     private final LayoutInflater mInflater;
+    private final boolean readOnly; // used to determine if excursions are clickable for admin or readonly for user
+
 
     class ExcursionViewHolder extends RecyclerView.ViewHolder {
         private final TextView excursionItemView;
@@ -29,26 +31,37 @@ public class ExcursionAdapter extends RecyclerView.Adapter<ExcursionAdapter.Excu
             excursionItemView = itemView.findViewById(R.id.textView5);
             excursionItemView2 = itemView.findViewById(R.id.textView6);
 
-            // takes user to ExcursionDetails when an excursion is clicked on
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition();
-                    final Excursion current = mExcursions.get(position);
-                    Intent intent = new Intent(context, ExcursionDetails.class);
-                    intent.putExtra("id", current.getExcursionID());
-                    intent.putExtra("title", current.getExcursionTitle());
-                    intent.putExtra("date", current.getExcursionDate());
-                    intent.putExtra("vacationID", current.getVacationID());
-                    context.startActivity(intent);
-                }
-            });
+            // takes admin to ExcursionDetails when an excursion is clicked on
+            if (!readOnly) {
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int position = getAdapterPosition();
+                        final Excursion current = mExcursions.get(position);
+                        Intent intent = new Intent(context, ExcursionDetails.class);
+                        intent.putExtra("id", current.getExcursionID());
+                        intent.putExtra("title", current.getExcursionTitle());
+                        intent.putExtra("date", current.getExcursionDate());
+                        intent.putExtra("vacationID", current.getVacationID());
+                        context.startActivity(intent);
+                    }
+                });
+            }
         }
     }
 
+    // constructor for admin view
     public ExcursionAdapter(Context context){
         mInflater = LayoutInflater.from(context);
         this.context = context;
+        this.readOnly = false;
+    }
+
+    // overloaded constructor with readOnly parameter
+    public ExcursionAdapter(Context context, boolean readOnly) {
+        mInflater = LayoutInflater.from(context);
+        this.context = context;
+        this.readOnly = readOnly;
     }
 
 

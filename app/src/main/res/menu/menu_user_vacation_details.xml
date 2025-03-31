@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Set Vacation Alert" android:id="@+id/userVacationAlert"/>
+    <item android:title="Set Excursion Alert" android:id="@+id/userExcursionAlert" />
+    <item android:title="Share Trip Details" android:id="@+id/userShareTrip" />
+    <item android:title="Logout" android:id="@+id/logoutUserVacationDetails" />
+</menu>
