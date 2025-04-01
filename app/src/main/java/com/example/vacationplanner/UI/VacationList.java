@@ -33,6 +33,11 @@ public class VacationList extends AppCompatActivity {
     private ExcursionRepository excursionRepository;
     private VacationAdapter vacationAdapter;
 
+    private static final String USER_ROLE_KEY = "userRole";
+    private static final String SELECTED_USER_ID = "selectedUserId";
+    private static final String SELECTED_USER_EMAIL = "selectedUserEmail";
+    private String userRole;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

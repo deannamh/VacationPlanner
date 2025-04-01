@@ -1,7 +1,9 @@
 package com.example.vacationplanner.UI;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,32 +18,48 @@ import com.example.vacationplanner.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.vacationplanner.entities.User;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     public static int numAlert;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
     private Button registerButton;
+
+    // for sharedpreferences:
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "SKJTravelPrefs";
+    private static final String USER_ID_KEY = "userId";
+    private static final String USER_EMAIL_KEY = "userEmail";
+    private static final String USER_ROLE_KEY = "userRole";
+    private static final String TAG = "LoginActivity";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // initialize firebase auth:
+        // initialize firebase auth and firestore:
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        //initialize sharedpreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         // UI elements:
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
         registerButton = findViewById(R.id.registerButton);
+
 
         // login button onClick:
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -51,27 +69,27 @@ public class MainActivity extends AppCompatActivity {
                 String password = passwordEditText.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Please enter your email and password to log in.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Please enter your email and password to log in.", Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 // sign in with firebase
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(MainActivity.this, task -> {
-                            if (task.isSuccessful()) {
-                                // Check user role and navigate accordingly
-                                checkUserAndEnter();
-                            } else {
-                                // if user login failed:
-                                Toast.makeText(MainActivity.this, "Login failed: " +
-                                                (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, task -> {
+                    if (task.isSuccessful()) {
+                        //if sign in is successful, get the current user
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            checkUserAndEnter(user.getUid(), user.getEmail());
+                        }
+                    } else {
+                        // if user login failed:
+                        Toast.makeText(MainActivity.this, "Login failed: " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
 
-        //register button onClick:
+        // register button onClick:
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,25 +97,23 @@ public class MainActivity extends AppCompatActivity {
                 String password = passwordEditText.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Please enter email and password to register.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Please enter email and password to register", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                // Create user account
+                // Create new user account
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(MainActivity.this, task -> {
                             if (task.isSuccessful()) {
-                                // Registration success - set user role to default "user"
+                                // Registration successful, set role to "user"
                                 FirebaseUser user = mAuth.getCurrentUser();
                                 if (user != null) {
-                                    // Set up user in Firestore with default "user" role
-                                    addNewUser(user);
+                                    // add user to Firestore db with default "user" role
+                                    addNewUserToFirestore(user.getUid(), user.getEmail(), "user");
                                 }
                             } else {
                                 // Registration failed
-                                Toast.makeText(MainActivity.this, "Registration failed: " +
-                                                (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
-                                        Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Registration failed: " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_LONG).show();
                             }
                         });
             }
@@ -110,76 +126,105 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Set up new default user
-    private void addNewUser(FirebaseUser user) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("email", user.getEmail());
-        userData.put("role", "user"); // default role for new users
-        userData.put("userId", user.getUid());
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Check if user is currently signed in
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            // check if user or admin to go to correct screen
+            checkUserAndEnter(currentUser.getUid(), currentUser.getEmail());
+        }
+    }
 
-        db.collection("users").document(user.getUid())
-                .set(userData)
+    // Set up new default user
+    private void addNewUserToFirestore(String userId, String email, String role) {
+        User user = new User(userId, email);
+        // Add user to firestore db:
+        db.collection("users").document(userId)
+                .set(user)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(MainActivity.this, "Registration complete!", Toast.LENGTH_SHORT).show();
-                    // send users to user screen
-                    openUserScreen();
+                    Log.d(TAG, "User document created");
+
+                    db.collection("users").document(userId)
+                            .update("role", role)
+                            .addOnSuccessListener(aVoid1 -> {
+                                Log.d(TAG, "User role set to: " + role);
+
+                                //save user info to sharedpreferences using putString() and apply();
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString(USER_ID_KEY, userId);
+                                editor.putString(USER_EMAIL_KEY, email);
+                                editor.putString(USER_ROLE_KEY, role);
+                                editor.apply();
+
+                                //send admin to admin homepage, send user to user homepage
+                                if (role.equals("admin")) {
+                                    openAdminScreen();
+                                } else {
+                                    openUserScreen();
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Error setting user role", e);
+                                Toast.makeText(MainActivity.this, "Could not set user role", Toast.LENGTH_LONG).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(MainActivity.this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                    Log.e("Error creating user document in Firestore db", e);
+                    Toast.makeText(MainActivity.this, "Could not create user", Toast.LENGTH_LONG).show();
                 });
     }
 
-    // Check user role in Firestore db and go to correct screen
-    private void checkUserAndEnter() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("users").document(user.getUid())
+    // check user role in firestore db and go to correct screen
+    private void checkUserAndEnter(String userId, String email) {
+        db.collection("users").document(userId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
-                        if ("admin".equals(role)) {
+                        if (role == null) {
+                            role = "user"; // Default role is "user" if it is not set
+                        }
+
+                        // save user info to sharedpreferences
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString(USER_ID_KEY, userId);
+                        editor.putString(USER_EMAIL_KEY, email);
+                        editor.putString(USER_ROLE_KEY, role);
+                        editor.apply();
+
+                        // redirect to correct homepage
+                        if (role.equals("admin")) {
                             openAdminScreen();
                         } else {
                             openUserScreen();
                         }
+
                     } else {
-                        // If user document doesn't exist yet, create it with default role
-                        addNewUser(user);
+                        // user document doesn't exist so make a new one with default role "user"
+                        addNewUserToFirestore(userId, email, "user");
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(MainActivity.this, "Error checking user role", Toast.LENGTH_SHORT).show();
-                    // Default to user interface if there's an error
-                    openUserScreen();
+                    Log.e(TAG, "Error checking user role", e);
+                    Toast.makeText(MainActivity.this, "Error retrieving user information", Toast.LENGTH_LONG).show();
                 });
     }
 
-    // Navigate to the admin interface (VacationList)
+    // open admin homepage AdminSearchActivity
     private void openAdminScreen() {
-        Intent intent = new Intent(MainActivity.this, VacationList.class);
+        Intent intent = new Intent(MainActivity.this, AdminSearchActivity.class);
         startActivity(intent);
         finish();
     }
 
-    // Navigate to the user interface (UserVacationList)
+    // open user homepage UserVacationList
     private void openUserScreen() {
         Intent intent = new Intent(MainActivity.this, UserVacationList.class);
         startActivity(intent);
         finish();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Check if user is signed in
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            // check if user or admin to go to correct screen
-            checkUserAndEnter();
-        }
-    }
 }
