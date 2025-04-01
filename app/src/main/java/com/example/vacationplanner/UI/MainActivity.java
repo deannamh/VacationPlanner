@@ -166,12 +166,12 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             })
                             .addOnFailureListener(e -> {
-                                Log.e("Error setting user role", e);
+                                Log.e(TAG, "Error setting user role", e);
                                 Toast.makeText(MainActivity.this, "Could not set user role", Toast.LENGTH_LONG).show();
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("Error creating user document in Firestore db", e);
+                    Log.e(TAG, "Error creating user document in Firestore db", e);
                     Toast.makeText(MainActivity.this, "Could not create user", Toast.LENGTH_LONG).show();
                 });
     }
