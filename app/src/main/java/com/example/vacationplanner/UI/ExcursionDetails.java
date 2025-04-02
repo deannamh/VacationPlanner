@@ -54,7 +54,7 @@ public class ExcursionDetails extends AppCompatActivity {
     ExcursionRepository excursionRepository;
 
     Vacation currentVacation;
-    Excursion currentExcursion;
+    //Excursion currentExcursion;
     Date startDate;
     Date endDate;
     String vacationStartDate;
@@ -66,6 +66,10 @@ public class ExcursionDetails extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_excursion_details);
+
+        // toolbar set up as the action bar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // initialize firebase repositories since we are no longer using Room database
         vacationRepository = new VacationRepository();

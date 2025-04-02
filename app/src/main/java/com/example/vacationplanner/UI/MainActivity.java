@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String USER_ID_KEY = "userId";
     private static final String USER_EMAIL_KEY = "userEmail";
     private static final String USER_ROLE_KEY = "userRole";
-    private static final String TAG = "LoginActivity";
+    private static final String TAG = "MainActivity";
 
 
     @Override
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         //initialize sharedpreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        // UI elements:
+        // UI elements from activity_main.xml
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         if (role == null) {
-                            role = "user"; // Default role is "user" if it is not set
+                            role = "user"; // default role is "user" if it is not set
                         }
 
                         // save user info to sharedpreferences

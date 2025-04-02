@@ -2,6 +2,7 @@ package com.example.vacationplanner.UI;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -43,10 +44,36 @@ public class VacationList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vacation_list);
 
+        // toolbar set up as the action bar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);;
+
         // initialize firebase repositories
         vacationRepository = new VacationRepository();
         excursionRepository = new ExcursionRepository();
 
+        // get user role from SharedPreferences so we can make sure the admin app pages are shown to the admin and the user pages are shown to the user
+        SharedPreferences sharedPreferences = getSharedPreferences("SKJTravelPrefs", MODE_PRIVATE);
+        userRole = sharedPreferences.getString(USER_ROLE_KEY, "user");
+
+        // check if admin selected a user
+        if (userRole.equals("admin")) {
+            String selectedUserId = sharedPreferences.getString(SELECTED_USER_ID, "");
+            String selectedUserEmail = sharedPreferences.getString(SELECTED_USER_EMAIL, "");
+
+            if (!selectedUserId.isEmpty()) {
+                // if the admin selected a user id, show that user's email in the toolbar title
+                if (toolbar != null) {
+                    toolbar.setTitle("Vacations for: " + selectedUserEmail);
+                }
+            } else {
+                // if the admin did not select a user, go back to the admin home page
+                Toast.makeText(this, "No user selected", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, AdminSearchActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -78,7 +105,19 @@ public class VacationList extends AppCompatActivity {
 
     // method to load vacations from firebase on to RecyclerView:
     private void loadVacations() {
-        vacationRepository.getAllVacations().observe(this, vacations -> {
+        // get the current user id based on role
+        String currUserId = vacationRepository.getCurrentUserId();
+
+        if (userRole != null && userRole.equals("admin")) {
+            SharedPreferences sharedPreferences = getSharedPreferences("SKTravelPrefs", MODE_PRIVATE);
+            String selectedUserId = sharedPreferences.getString(SELECTED_USER_ID, "");
+            if (!selectedUserId.isEmpty()) {
+                currUserId = selectedUserId;
+            }
+        }
+
+        // use current user ID to get vacations
+        vacationRepository.getAllVacationsForUser(currUserId).observe(this, vacations -> {
             vacationAdapter.setVacations(vacations);
         });
     }
@@ -93,7 +132,7 @@ public class VacationList extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume(); // Firebase LiveData will automatically update when changes are made in the recyclerview in loadVacations method
-        //gets vacations from database again and updates the recyclerview
+        //gets vacations from room database again and updates the recyclerview
 //        super.onResume();
 //        List<Vacation> allVacations = repository.getmAllVacations();
 //        RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -106,27 +145,26 @@ public class VacationList extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.sample) {
-            // Reference to store the actual Firestore vacation ID
+            // store the actual firestore vacation id
             final String[] actualVacationId = {null};
 
-            // Create sample vacation 1
+            // Create sample vacations
             Vacation vacation1 = new Vacation("temp-id", "Trinidad and Tobago", "Hyatt", "02/01/25", "02/15/25");
             vacation1.setUserId(vacationRepository.getCurrentUserId());
-
-            // Create sample vacation 2
             Vacation vacation2 = new Vacation("temp-id2", "Florida", "Marriott", "04/03/25", "04/10/25");
             vacation2.setUserId(vacationRepository.getCurrentUserId());
 
-            // Add vacation 1 to Firestore and get it's vacationID
+            //firestore uses asynchronos db operations
+            // Add vacation 1 to firestore and get its vacation id
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("vacations")
                     .add(vacation1)
                     .addOnSuccessListener(documentReference -> {
-                        // Store the Firestore document ID
+                        //save firestore document iid
                         String id = documentReference.getId();
                         actualVacationId[0] = id;
 
-                        // update the vacationID field in the document
+                        // update the vacationID field in the firestore document so there isn't a mismatch since creating a vacation generates a different id than firestore's document id
                         documentReference.update("vacationID", id);
                         Log.d("SampleData", "Vacation 1 added with actual Firestore ID: " + id);
 
@@ -139,9 +177,9 @@ public class VacationList extends AppCompatActivity {
                                     Log.d("SampleData", "Vacation 2 added with actual Firestore ID: " + id2);
                                 });
 
-                        // Add excursions after confirming vacation 1 was saved
+                        // now add excursions after confirming vacationw were added by code above
                         new Handler().postDelayed(() -> {
-                            // create excursions with the Firestore document ID
+                            // create excursions with the firestore document id
                             Excursion excursion1 = new Excursion(UUID.randomUUID().toString(),
                                     "Snorkeling", "02/05/25", actualVacationId[0], false);
                             Log.d("SampleData", "Adding excursion 'Snorkeling' for  vacation ID: " + actualVacationId[0]);
@@ -169,10 +207,13 @@ public class VacationList extends AppCompatActivity {
         }
 
         if (item.getItemId() == android.R.id.home) { // for a back button to home page
-            this.finish();
-            // Comment out the previous line and use the next two lines instead for back button to go to VacationDetails instead
-            // Intent intent = new Intent(VacationList.this, VacationDetails.class);
-            // startActivity(intent);
+            if (userRole != null && userRole.equals("admin")) {
+                // back button takes admin to admin home page AdminSearchActivity
+                Intent intent = new Intent(VacationList.this, AdminSearchActivity.class);
+                startActivity(intent);
+            } else {
+                this.finish();
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);

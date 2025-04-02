@@ -27,6 +27,10 @@ public class UserVacationList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_vacation_list);
 
+        // toolbar set up as the action bar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         // initialize firebase repository
         vacationRepository = new VacationRepository();
 

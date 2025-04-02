@@ -79,6 +79,10 @@ public class VacationDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vacation_details);
 
+        // toolbar set up as the action bar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         // initialize firebase repositories:
         vacationRepository = new VacationRepository();
         excursionRepository = new ExcursionRepository();

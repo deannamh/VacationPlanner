@@ -2,19 +2,13 @@ package com.example.vacationplanner.UI;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,8 +24,7 @@ import com.example.vacationplanner.database.ExcursionRepository;
 import com.example.vacationplanner.database.VacationRepository;
 import com.example.vacationplanner.entities.Excursion;
 import com.example.vacationplanner.entities.Vacation;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
@@ -41,7 +34,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 public class UserVacationDetails extends AppCompatActivity {
 
@@ -71,6 +63,10 @@ public class UserVacationDetails extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_vacation_details);
+
+        // toolbar set up as the action bar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // initialize firebase repositories:
         vacationRepository = new VacationRepository();
@@ -240,7 +236,7 @@ public class UserVacationDetails extends AppCompatActivity {
             return true;
         }
 
-        if (item.getItemId() == R.id.logoutVacationDetails) {
+        if (item.getItemId() == R.id.logoutUserVacationDetails) {
             confirmLogout();
             return true;
         }

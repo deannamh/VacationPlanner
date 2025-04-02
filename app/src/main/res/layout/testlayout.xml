@@ -2,9 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="UI.AdminSearchActivity">
+    tools:context=".UI.VacationDetails">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -19,79 +20,10 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#2570d4"
-            app:title="SKJ Travel Agent Portal"
+            android:paddingBottom="8dp"
+            app:title="Admin Home"
             app:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/linearlayoutappbar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="300dp"-->
-<!--        android:orientation="vertical"-->
-<!--        android:padding="16dp"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/appBarLayout"-->
-<!--        tools:layout_editor_absoluteX="0dp">-->
-
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Search by email:"-->
-<!--            android:textSize="16sp"-->
-<!--            android:textStyle="bold"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />-->
-
-<!--        <EditText-->
-<!--            android:id="@+id/searchEditText"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:hint="Enter user email"-->
-<!--            android:inputType="textEmailAddress" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/searchButton"-->
-<!--            android:layout_width="380dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:backgroundTint="#2570d4"-->
-<!--            android:text="Search" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/textView3"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Search by date range:"-->
-<!--            android:textSize="16sp"-->
-<!--            android:textStyle="bold"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />-->
-
-<!--        <EditText-->
-<!--            android:id="@+id/searchEditText2"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:hint="Start date"-->
-<!--            android:inputType="textEmailAddress" />-->
-
-<!--        <EditText-->
-<!--            android:id="@+id/searchEditText3"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:hint="End date"-->
-<!--            android:inputType="textEmailAddress" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/searchButton2"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:backgroundTint="#2570d4"-->
-<!--            android:text="Search" />-->
-
-<!--    </LinearLayout>-->
 
     <LinearLayout
         android:id="@+id/linearLayoutVertical"
@@ -140,7 +72,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/linearLayoutVertical1"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:orientation="vertical"
@@ -227,53 +158,4 @@
             android:textStyle="bold"
             android:typeface="normal" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/noUsersTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No users found with that email"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutVertical1" />
-
-    <TextView
-        android:id="@+id/vacationListFound"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vacations found: "
-        android:textSize="17sp"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutVertical1" />
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/userListRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutVertical1"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/vacationListRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="24dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutVertical1" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
